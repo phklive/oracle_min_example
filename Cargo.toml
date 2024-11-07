@@ -9,6 +9,7 @@ default = ["rand_chacha"]
 [dependencies]
 miden-crypto = { version = "0.12", default-features = false }
 miden-lib = { version = "0.6", default-features = false }
+miden-assembly = { version = "0.11", default-features = false }
 miden-objects = { version = "0.6", default-features = false }
 miden-tx = { version = "0.6", features = ["testing"] }
 rand = { version = "0.8", default-features = false }

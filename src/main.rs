@@ -1,27 +1,36 @@
 extern crate alloc;
 
-use miden_crypto::{
-    dsa::rpo_falcon512::{PublicKey, SecretKey}, EMPTY_WORD,
+use miden_assembly::{
+    ast::{Module, ModuleKind},
+    DefaultSourceManager, LibraryPath,
 };
-use miden_lib::{transaction::TransactionKernel, accounts::auth::RpoFalcon512};
+use miden_crypto::{
+    dsa::rpo_falcon512::{PublicKey, SecretKey},
+    EMPTY_WORD,
+};
+use miden_lib::{accounts::auth::RpoFalcon512, transaction::TransactionKernel};
 use miden_objects::{
-    accounts::{Account, AccountId, AccountComponent, StorageSlot},
+    accounts::{Account, AccountComponent, AccountId, StorageSlot},
+    assembly::Library,
     assets::AssetVault,
     transaction::{TransactionArgs, TransactionScript},
     Felt, Word,
 };
+
 use miden_tx::{testing::TransactionContextBuilder, TransactionExecutor};
 use rand_chacha::{rand_core::SeedableRng, ChaCha20Rng};
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 
 pub const PUSH_DATA_TX_SCRIPT: &str = r#"
+    use.oracle_component::oracle_module
+
     begin
         push.{1}
         push.{2}
         push.{3}
         push.{4}
 
-        call.[1]
+        call.oracle_module::push_oracle_data
 
         dropw dropw dropw dropw
 
@@ -61,12 +70,9 @@ pub const ORACLE_ACCOUNT_CODE: &str = r#"
     end
 "#;
 
-
-#[test]
-fn oracle_account_creation_and_pushing_data_to_read() {
+fn main() {
     let (oracle_pub_key, oracle_auth) = get_new_pk_and_authenticator();
-    let oracle_account_id =
-        AccountId::try_from(10376293541461622847_u64).unwrap();
+    let oracle_account_id = AccountId::try_from(10376293541461622847_u64).unwrap();
 
     let oracle_account = get_oracle_account(oracle_pub_key, oracle_account_id);
 
@@ -107,7 +113,6 @@ fn oracle_account_creation_and_pushing_data_to_read() {
     let word_3 = data_to_word(&oracle_data_3);
     let word_4 = data_to_word(&oracle_data_4);
 
-
     println!("Oracle data to push : {:?}", word_1);
 
     // CONSTRUCT AND EXECUTE TX
@@ -133,8 +138,17 @@ fn oracle_account_creation_and_pushing_data_to_read() {
 
     println!("Push tx script code: {}", push_tx_script_code);
     let assembler = TransactionKernel::assembler().with_debug_mode(true);
-    let push_tx_script =
-        TransactionScript::compile(push_tx_script_code, [], assembler.clone()).unwrap();
+    let push_tx_script = TransactionScript::compile(
+        push_tx_script_code,
+        [],
+        // Add the oracle account's component as a library to link
+        // against so we can reference the account in the transaction script.
+        assembler
+            .with_library(ORACLE_COMPONENT_LIBRARY.as_ref())
+            .expect("adding oracle library should not fail")
+            .clone(),
+    )
+    .unwrap();
     let txn_args = TransactionArgs::with_tx_script(push_tx_script);
 
     let executed_transaction = executor
@@ -145,9 +159,10 @@ fn oracle_account_creation_and_pushing_data_to_read() {
     println!("Account Delta: {:?}", executed_transaction.account_delta());
 }
 
-
-pub fn get_new_pk_and_authenticator(
-) -> (Word, std::sync::Arc<dyn miden_tx::auth::TransactionAuthenticator>) {
+pub fn get_new_pk_and_authenticator() -> (
+    Word,
+    std::sync::Arc<dyn miden_tx::auth::TransactionAuthenticator>,
+) {
     use alloc::sync::Arc;
 
     use miden_objects::accounts::AuthSecretKey;
@@ -163,17 +178,33 @@ pub fn get_new_pk_and_authenticator(
     let authenticator =
         BasicAuthenticator::<StdRng>::new(&[(pub_key, AuthSecretKey::RpoFalcon512(sec_key))]);
 
-    (pub_key, Arc::new(authenticator) as Arc<dyn TransactionAuthenticator>)
+    (
+        pub_key,
+        Arc::new(authenticator) as Arc<dyn TransactionAuthenticator>,
+    )
 }
 
-fn get_oracle_account(oracle_public_key: Word, oracle_account_id: AccountId) -> Account {
-
+static ORACLE_COMPONENT_LIBRARY: LazyLock<Library> = LazyLock::new(|| {
     let assembler = TransactionKernel::assembler().with_debug_mode(true);
 
+    let source_manager = Arc::new(DefaultSourceManager::default());
+    let oracle_component_module = Module::parser(ModuleKind::Library)
+        .parse_str(
+            LibraryPath::new("oracle_component::oracle_module").unwrap(),
+            ORACLE_ACCOUNT_CODE,
+            &source_manager,
+        )
+        .unwrap();
+
+    assembler
+        .assemble_library([oracle_component_module])
+        .expect("assembly should succeed")
+});
+
+fn get_oracle_account(oracle_public_key: Word, oracle_account_id: AccountId) -> Account {
     // This component supports all types of accounts for testing purposes.
-    let oracle_component = AccountComponent::compile(
-        ORACLE_ACCOUNT_CODE,
-        assembler.clone(),
+    let oracle_component = AccountComponent::new(
+        ORACLE_COMPONENT_LIBRARY.clone(),
         vec![StorageSlot::Value(Word::default()); 4],
     )
     .unwrap()
@@ -181,7 +212,10 @@ fn get_oracle_account(oracle_public_key: Word, oracle_account_id: AccountId) -> 
 
     let (oracle_account_code, oracle_account_storage) = Account::initialize_from_components(
         oracle_account_id.account_type(),
-        &[RpoFalcon512::new(PublicKey::new(oracle_public_key)).into(), oracle_component],
+        &[
+            RpoFalcon512::new(PublicKey::new(oracle_public_key)).into(),
+            oracle_component,
+        ],
     )
     .unwrap();
 
@@ -195,7 +229,6 @@ fn get_oracle_account(oracle_public_key: Word, oracle_account_id: AccountId) -> 
         Felt::new(1),
     )
 }
-
 
 pub struct OracleData {
     pub asset_pair: String, // store ASCII strings of up to 8 characters as the asset pair
