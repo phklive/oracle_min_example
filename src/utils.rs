@@ -78,14 +78,15 @@ pub fn encode_asset_pair_to_u32(s: &str) -> Option<u32> {
 }
 
 /// Returns an instantiated Oracle account
-pub fn get_oracle_account(oracle_public_key: Word, oracle_account_id: AccountId) -> Account {
+pub fn get_oracle_account(
+    oracle_public_key: Word,
+    oracle_account_id: AccountId,
+    storage_slots: Vec<StorageSlot>,
+) -> Account {
     // This component supports all types of accounts for testing purposes.
-    let oracle_component = AccountComponent::new(
-        ORACLE_COMPONENT_LIBRARY.clone(),
-        vec![StorageSlot::Value(Word::default()); 4],
-    )
-    .unwrap()
-    .with_supports_all_types();
+    let oracle_component = AccountComponent::new(ORACLE_COMPONENT_LIBRARY.clone(), storage_slots)
+        .unwrap()
+        .with_supports_all_types();
 
     let (oracle_account_code, oracle_account_storage) = Account::initialize_from_components(
         oracle_account_id.account_type(),

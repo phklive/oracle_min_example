@@ -24,7 +24,7 @@ pub static ORACLE_COMPONENT_LIBRARY: LazyLock<Library> = LazyLock::new(|| {
         .expect("assembly should succeed")
 });
 
-pub const PUSH_DATA_TX_SCRIPT: &str = r#"
+pub const WRITE_DATA_TX_SCRIPT: &str = r#"
     use.oracle_component::oracle_module
 
     begin
@@ -33,7 +33,7 @@ pub const PUSH_DATA_TX_SCRIPT: &str = r#"
         push.{2}
         push.{1}
 
-        call.oracle_module::push_oracle_data
+        call.oracle_module::write_oracle_data
 
         dropw dropw dropw dropw
 
@@ -45,12 +45,12 @@ pub const PUSH_DATA_TX_SCRIPT: &str = r#"
 pub const ORACLE_ACCOUNT_CODE: &str = r#"
     use.miden::account
 
-    #! Pushes new price data into the oracle's data slots.
+    #! Writes new price data into the oracle's data slots.
     #!
     #! Inputs:  [WORD_1, WORD_2, WORD_3, WORD_4]
     #! Outputs: []
     #!
-    export.push_oracle_data
+    export.write_oracle_data
         push.0
         exec.account::set_item
         dropw dropw
@@ -70,5 +70,20 @@ pub const ORACLE_ACCOUNT_CODE: &str = r#"
         exec.account::set_item
         dropw dropw
         # => []
+    end
+
+    #! Gets new price data from the oracle's data slots.
+    #!
+    #! Inputs:  [storage_slot]
+    #! Outputs: [WORD]
+    #!
+    export.get_item_foreign
+        # make this foreign procedure unique to make sure that we invoke the procedure of the 
+        # foreign account, not the native one
+        push.1 drop
+        exec.account::get_item
+
+        # truncate the stack
+        movup.6 movup.6 movup.6 drop drop drop
     end
 "#;
