@@ -1,0 +1,79 @@
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test test_oracle_write ... ok
+Push tx script code: 
+    use.oracle_component::oracle_module
+
+    begin
+        push.120195681.50000.2.1
+        push.120200804.10000.2.1
+        push.120204754.2000.2.1
+        push.120204751.50.2.1
+
+        call.oracle_module::push_oracle_data
+
+        dropw dropw dropw dropw
+
+        call.::miden::contracts::auth::basic::auth_tx_rpo_falcon512
+        drop
+    end
+
+Account Delta: AccountDelta { storage: AccountStorageDelta { values: {1: [120204751, 50, 2, 1], 2: [120204754, 2000, 2, 1], 3: [120200804, 10000, 2, 1], 4: [120195681, 50000, 2, 1]}, maps: {} }, vault: AccountVaultDelta { fungible: FungibleAssetDelta({}), non_fungible: NonFungibleAssetDelta({}) }, nonce: Some(2) }
+Oracle account after delta application: AccountStorage {
+    slots: [
+        Value(
+            [
+                13642120692355817730,
+                14340237824901842161,
+                3638127317171027907,
+                15110848026471267870,
+            ],
+        ),
+        Value(
+            [
+                120204751,
+                50,
+                2,
+                1,
+            ],
+        ),
+        Value(
+            [
+                120204754,
+                2000,
+                2,
+                1,
+            ],
+        ),
+        Value(
+            [
+                120200804,
+                10000,
+                2,
+                1,
+            ],
+        ),
+        Value(
+            [
+                120195681,
+                50000,
+                2,
+                1,
+            ],
+        ),
+    ],
+}
+test test_oracle_read ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 17.87s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

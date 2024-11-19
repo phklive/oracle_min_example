@@ -1,5 +1,3 @@
-extern crate alloc;
-
 use miden_assembly::{
     ast::{Module, ModuleKind},
     DefaultSourceManager, LibraryPath,
@@ -30,10 +28,10 @@ pub const PUSH_DATA_TX_SCRIPT: &str = r#"
     use.oracle_component::oracle_module
 
     begin
-        push.{1}
-        push.{2}
-        push.{3}
         push.{4}
+        push.{3}
+        push.{2}
+        push.{1}
 
         call.oracle_module::push_oracle_data
 
@@ -42,7 +40,7 @@ pub const PUSH_DATA_TX_SCRIPT: &str = r#"
         call.::miden::contracts::auth::basic::auth_tx_rpo_falcon512
         drop
     end
-    "#;
+"#;
 
 pub const ORACLE_ACCOUNT_CODE: &str = r#"
     use.miden::account
@@ -55,22 +53,22 @@ pub const ORACLE_ACCOUNT_CODE: &str = r#"
     export.push_oracle_data
         push.0
         exec.account::set_item
-        dropw
+        dropw dropw
         # => [WORD_2, WORD_3, WORD_4]
 
         push.1
         exec.account::set_item
-        dropw
+        dropw dropw
         # => [WORD_3, WORD_4]
 
         push.2
         exec.account::set_item
-        dropw
+        dropw dropw
         # => [WORD_4]
 
         push.3
         exec.account::set_item
-        dropw
+        dropw dropw
         # => []
     end
 "#;
