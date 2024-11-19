@@ -1,5 +1,5 @@
 [package]
-name = "oracle_min_example"
+name = "miden_oracle"
 version = "0.1.0"
 edition = "2021"
 
