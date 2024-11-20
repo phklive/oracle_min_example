@@ -1,5 +1,3 @@
-extern crate alloc;
-
 use miden_crypto::{Word, ONE, ZERO};
 use miden_lib::transaction::TransactionKernel;
 use miden_objects::{
