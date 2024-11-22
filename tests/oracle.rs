@@ -29,11 +29,14 @@ fn test_oracle_write() {
     let oracle_account_id = AccountId::try_from(10376293541461622847_u64).unwrap();
     let oracle_storage_slots = vec![StorageSlot::Value(Word::default()); 4];
 
+    // create oracle account
     let mut oracle_account =
         get_oracle_account(oracle_pub_key, oracle_account_id, oracle_storage_slots);
 
+    // create oracle data (price feeds)
     let [oracle_data_1, oracle_data_2, oracle_data_3, oracle_data_4] = mock_oracle_data();
 
+    // transform OracleData into field elements for VM processing
     let oracle_data_word_1 = oracle_data_1.to_word();
     let oracle_data_word_2 = oracle_data_2.to_word();
     let oracle_data_word_3 = oracle_data_3.to_word();
@@ -82,7 +85,8 @@ fn test_oracle_write() {
         .apply_delta(executed_transaction.account_delta())
         .unwrap();
 
-    // check that the oracle account has successfully been updated with the correct values
+    // check that the oracle account has successfully been updated with the correct values (price
+    // feeds)
     assert_eq!(
         oracle_account.storage().slots()[1].value(),
         oracle_data_word_1
@@ -108,6 +112,7 @@ fn test_oracle_read() {
     let (oracle_pub_key, _) = get_new_pk_and_authenticator();
     let oracle_account_id = AccountId::try_from(10376293541461622847_u64).unwrap();
 
+    // create oracle data (price feeds)
     let [oracle_data_1, oracle_data_2, oracle_data_3, oracle_data_4] = mock_oracle_data();
 
     let oracle_data_word_1 = oracle_data_1.to_word();
@@ -122,6 +127,9 @@ fn test_oracle_read() {
         StorageSlot::Value(oracle_data_word_4),
     ];
 
+    // In this test we have 2 accounts:
+    // - Oracle account -> contains data in it's storage e.g. token price data
+    // - Native account -> tries to read data from the oracle account's storage
     let oracle_account =
         get_oracle_account(oracle_pub_key, oracle_account_id, oracle_storage_slots);
 
@@ -144,16 +152,18 @@ fn test_oracle_read() {
 
     let advice_inputs = get_mock_fpi_adv_inputs(&oracle_account, &mock_chain);
 
+    // query oracle (foreign account) for price feeds and compare to required values i.e correct
+    // storage read
     let code = format!(
         "
         use.std::sys
-
         use.miden::tx
 
         begin
             ### get oracle data 1 ###
 
             # pad the stack for the `execute_foreign_procedure`execution
+            # making sure to keep the stack 16 elements
             padw padw padw push.0.0
             # => [pad(14)]
 
@@ -177,6 +187,7 @@ fn test_oracle_read() {
             ### get oracle data 2 ###
 
             # pad the stack for the `execute_foreign_procedure`execution
+            # making sure to keep the stack 16 elements
             padw padw padw push.0.0
             # => [pad(14)]
 
@@ -200,6 +211,7 @@ fn test_oracle_read() {
             ### get oracle data 3 ###
 
             # pad the stack for the `execute_foreign_procedure`execution
+            # making sure to keep the stack 16 elements
             padw padw padw push.0.0
             # => [pad(14)]
 
@@ -223,6 +235,7 @@ fn test_oracle_read() {
             ### get oracle data 4 ###
 
             # pad the stack for the `execute_foreign_procedure`execution
+            # making sure to keep the stack 16 elements
             padw padw padw push.0.0
             # => [pad(14)]
 
@@ -275,8 +288,7 @@ fn test_oracle_read() {
     let mut executor: TransactionExecutor =
         TransactionExecutor::new(Arc::new(tx_context.clone()), None).with_tracing();
 
-    // load the mast forest of the foreign account's code to be able to create an account procedure
-    // index map and execute the specified foreign procedure
+    // load the foreign account's code into the transaction executor
     executor.load_account_code(oracle_account.code());
 
     executor
@@ -293,6 +305,7 @@ fn test_oracle_read() {
 // HELPER FUNCTIONS
 // ================================================================================================
 
+/// Mocks [OracleData] representing price feeds for use in tests.
 fn mock_oracle_data() -> [OracleData; 4] {
     [
         OracleData {
@@ -322,6 +335,7 @@ fn mock_oracle_data() -> [OracleData; 4] {
     ]
 }
 
+/// Mocks the required advice inputs for foreign procedure invocation.
 fn get_mock_fpi_adv_inputs(foreign_account: &Account, mock_chain: &MockChain) -> AdviceInputs {
     let foreign_id_root = Digest::from([foreign_account.id().into(), ZERO, ZERO, ZERO]);
     let foreign_id_and_nonce = [

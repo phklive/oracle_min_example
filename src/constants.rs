@@ -43,6 +43,7 @@ pub const WRITE_DATA_TX_SCRIPT: &str = r#"
 "#;
 
 pub const ORACLE_ACCOUNT_CODE: &str = r#"
+    use.std::sys
     use.miden::account
 
     #! Writes new price data into the oracle's data slots.
@@ -84,6 +85,6 @@ pub const ORACLE_ACCOUNT_CODE: &str = r#"
         exec.account::get_item
 
         # truncate the stack
-        movup.6 movup.6 movup.6 drop drop drop
+        exec.sys::truncate_stack
     end
 "#;
