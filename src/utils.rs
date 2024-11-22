@@ -4,7 +4,7 @@ use miden_crypto::{dsa::rpo_falcon512::SecretKey, Word};
 
 use miden_crypto::{dsa::rpo_falcon512::PublicKey, Felt};
 use miden_lib::accounts::auth::RpoFalcon512;
-use miden_objects::accounts::AuthSecretKey;
+use miden_objects::accounts::{AccountCode, AccountStorage, AuthSecretKey};
 use miden_objects::{
     accounts::{Account, AccountComponent, AccountId, StorageSlot},
     assets::AssetVault,
@@ -87,16 +87,21 @@ pub fn get_oracle_account(
     let oracle_component = AccountComponent::new(ORACLE_COMPONENT_LIBRARY.clone(), storage_slots)
         .unwrap()
         .with_supports_all_types();
+    let account_type = oracle_account_id.account_type();
+    let components = [
+        RpoFalcon512::new(PublicKey::new(oracle_public_key)).into(),
+        oracle_component,
+    ];
 
-    let (oracle_account_code, oracle_account_storage) = Account::initialize_from_components(
-        oracle_account_id.account_type(),
-        &[
-            RpoFalcon512::new(PublicKey::new(oracle_public_key)).into(),
-            oracle_component,
-        ],
-    )
-    .unwrap();
-
+    let oracle_account_code = AccountCode::from_components(&components, account_type).unwrap();
+    let mut storage_slots = vec![];
+    storage_slots.extend(
+        components
+            .iter()
+            .flat_map(|component| component.storage_slots())
+            .cloned(),
+    );
+    let oracle_account_storage = AccountStorage::new(storage_slots).unwrap();
     let oracle_account_vault = AssetVault::new(&[]).unwrap();
 
     Account::from_parts(

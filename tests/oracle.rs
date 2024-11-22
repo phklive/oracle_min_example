@@ -1,7 +1,7 @@
-use miden_crypto::{Word, ONE, ZERO};
+use miden_crypto::{Word, ZERO};
 use miden_lib::transaction::TransactionKernel;
 use miden_objects::{
-    accounts::{Account, AccountBuilder, AccountId, StorageSlot},
+    accounts::{Account, AccountBuilder, AccountId, AccountStorage, StorageSlot},
     testing::account_component::AccountMockComponent,
     transaction::{TransactionArgs, TransactionScript},
     vm::AdviceInputs,
@@ -125,14 +125,16 @@ fn test_oracle_read() {
     let oracle_account =
         get_oracle_account(oracle_pub_key, oracle_account_id, oracle_storage_slots);
 
-    let (native_account, _) = AccountBuilder::new()
+    let native_account = AccountBuilder::new()
         .init_seed(ChaCha20Rng::from_entropy().gen())
         .with_component(
-            AccountMockComponent::new_with_slots(TransactionKernel::testing_assembler(), vec![])
-                .unwrap(),
+            AccountMockComponent::new_with_slots(
+                TransactionKernel::testing_assembler(),
+                vec![AccountStorage::mock_item_0().slot],
+            )
+            .unwrap(),
         )
-        .nonce(ONE)
-        .build_testing()
+        .build_existing()
         .unwrap();
 
     let mut mock_chain =

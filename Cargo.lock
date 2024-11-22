@@ -168,9 +168,9 @@ checksum = "7c74b8349d32d297c9134b8c88677813a227df8f779daa29bfc29c183fe3dca6"
 
 [[package]]
 name = "cpufeatures"
-version = "0.2.15"
+version = "0.2.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ca741a962e1b0bff6d724a1a0958b686406e853bb14061f218562e1896f95e6"
+checksum = "16b80225097f2e5ae4e7179dd2266824648f3e2f49d9134d584b76389d31c4c3"
 dependencies = [
  "libc",
 ]
@@ -438,9 +438,9 @@ dependencies = [
 
 [[package]]
 name = "itoa"
-version = "1.0.11"
+version = "1.0.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "49f1f14873335454500d59611f1cf4a4b0f786f9ac11f4312a78e4cf2566695b"
+checksum = "540654e97a3f4470a492cd30ff187bc95d89557a903a2bbf112e2fae98104ef2"
 
 [[package]]
 name = "jobserver"
@@ -655,13 +655,14 @@ dependencies = [
 
 [[package]]
 name = "miden-lib"
-version = "0.6.1"
-source = "git+https://github.com/0xPolygonMiden/miden-base?branch=andrew-rework-fpi-tests#6678418376b4102156205aadad7da64a687a7fc5"
+version = "0.7.0"
+source = "git+https://github.com/0xPolygonMiden/miden-base?branch=next#d94e917d32eec63a2d83fdbfd3e7f4dc39f7901d"
 dependencies = [
  "miden-assembly",
  "miden-objects",
  "miden-stdlib",
  "regex",
+ "walkdir",
 ]
 
 [[package]]
@@ -708,8 +709,8 @@ dependencies = [
 
 [[package]]
 name = "miden-objects"
-version = "0.6.1"
-source = "git+https://github.com/0xPolygonMiden/miden-base?branch=andrew-rework-fpi-tests#6678418376b4102156205aadad7da64a687a7fc5"
+version = "0.7.0"
+source = "git+https://github.com/0xPolygonMiden/miden-base?branch=next#d94e917d32eec63a2d83fdbfd3e7f4dc39f7901d"
 dependencies = [
  "getrandom",
  "miden-assembly",
@@ -718,6 +719,7 @@ dependencies = [
  "miden-processor",
  "miden-verifier",
  "rand",
+ "thiserror 2.0.3",
  "winter-rand-utils",
 ]
 
@@ -777,11 +779,10 @@ dependencies = [
 
 [[package]]
 name = "miden-tx"
-version = "0.6.1"
-source = "git+https://github.com/0xPolygonMiden/miden-base?branch=andrew-rework-fpi-tests#6678418376b4102156205aadad7da64a687a7fc5"
+version = "0.7.0"
+source = "git+https://github.com/0xPolygonMiden/miden-base?branch=next#d94e917d32eec63a2d83fdbfd3e7f4dc39f7901d"
 dependencies = [
  "async-trait",
- "miden-assembly",
  "miden-lib",
  "miden-objects",
  "miden-processor",
@@ -789,8 +790,6 @@ dependencies = [
  "miden-verifier",
  "rand",
  "rand_chacha",
- "regex",
- "walkdir",
  "winter-maybe-async",
 ]
 
@@ -1027,9 +1026,9 @@ checksum = "925383efa346730478fb4838dbe9137d2a47675ad789c546d150a6e1dd4ab31c"
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.89"
+version = "1.0.92"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f139b0662de085916d1fb67d2b4169d1addddda1919e696f3252b740b629986e"
+checksum = "37d3544b3f2748c54e147655edb5025752e2303145b5aefb3c3ea2c78b973bb0"
 dependencies = [
  "unicode-ident",
 ]
@@ -1110,7 +1109,7 @@ checksum = "ba009ff324d1fc1b900bd1fdb31564febe58a8ccc8a6fdbb93b543d33b13ca43"
 dependencies = [
  "getrandom",
  "libredox",
- "thiserror",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -1383,9 +1382,9 @@ checksum = "b7401a30af6cb5818bb64852270bb722533397edcfc7344954a38f420819ece2"
 
 [[package]]
 name = "syn"
-version = "2.0.87"
+version = "2.0.89"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "25aa4ce346d03a6dcd68dd8b4010bcb74e54e62c90c573f394c46eae99aba32d"
+checksum = "44d46482f1c1c87acd84dea20c1bf5ebff4c757009ed6bf19cfd36fb10e92c4e"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1445,7 +1444,16 @@ version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b6aaf5339b578ea85b50e080feb250a3e8ae8cfcdff9a461c9ec2904bc923f52"
 dependencies = [
- "thiserror-impl",
+ "thiserror-impl 1.0.69",
+]
+
+[[package]]
+name = "thiserror"
+version = "2.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c006c85c7651b3cf2ada4584faa36773bd07bac24acfb39f3c431b36d7e667aa"
+dependencies = [
+ "thiserror-impl 2.0.3",
 ]
 
 [[package]]
@@ -1453,6 +1461,17 @@ name = "thiserror-impl"
 version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4fee6c4efc90059e10f81e6d42c60a18f76588c3d74cb83a0b242a2b6c7504c1"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "thiserror-impl"
+version = "2.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f077553d607adc1caf65430528a576c757a71ed73944b66ebb58ef2bbd243568"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1597,9 +1616,9 @@ checksum = "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
 
 [[package]]
 name = "unicode-ident"
-version = "1.0.13"
+version = "1.0.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e91b56cd4cadaeb79bbf1a5645f6b4f8dc5bde8834ad5894a8db35fda9efa1fe"
+checksum = "adb9e6ca4f869e1180728b7950e35922a7fc6397f7b641499e8f3ef06e50dc83"
 
 [[package]]
 name = "unicode-linebreak"
@@ -1988,9 +2007,9 @@ dependencies = [
 
 [[package]]
 name = "winter-air"
-version = "0.10.2"
+version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "74ea405623248442dc08290afcce9a1b38683274e11952e6fcad6f10c22ff81f"
+checksum = "7c92f0d9a736cb744b0a3e267fafd50d27d6625be3681f55a2b7650ddbf3a2ce"
 dependencies = [
  "libm",
  "winter-crypto",
@@ -2043,9 +2062,9 @@ dependencies = [
 
 [[package]]
 name = "winter-prover"
-version = "0.10.2"
+version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1355271e7e1eef05cbb06fae85f6300321d37eb19d97d7d222a4aa3c16079591"
+checksum = "cab5e02d53d5df7903ebf3e1f4ba44b918267876bfd37eade046d9a669f4e9fb"
 dependencies = [
  "tracing",
  "winter-air",
@@ -2077,9 +2096,9 @@ dependencies = [
 
 [[package]]
 name = "winter-verifier"
-version = "0.10.2"
+version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8003bd5489d5d74036b1d71b2cb8d4bcb54dd05a753bfd2b20527c37cb1f63f0"
+checksum = "517c31712cceaafc3c7dcc9311f7d5d306b34e208bc72664c691056fd863f7b8"
 dependencies = [
  "winter-air",
  "winter-crypto",
